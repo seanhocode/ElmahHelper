@@ -8,13 +8,13 @@ namespace ElmahHelper.Model
     {
         public DateTime Time { get; set; }
 
-        private string ErrorID { get; set; }
-
         private string Application { get; set; }
 
         private string Host { get; set; }
 
         private string Type { get; set; }
+
+        public string ErrorID { get; set; }
 
         public string Message { get; set; }
 
@@ -22,6 +22,10 @@ namespace ElmahHelper.Model
 
         private string Detail { get; set; }
 
+        /// <summary>
+        /// 載入Error Data
+        /// </summary>
+        /// <param name="info"></param>
         public void SetInfo(XDocument info)
         {
             var errorElement = info.Descendants("error").FirstOrDefault();
@@ -41,10 +45,17 @@ namespace ElmahHelper.Model
             }
         }
 
-        public void SetEmptyInfo(string elmahName)
+        /// <summary>
+        /// 載入讀取錯誤Error
+        /// </summary>
+        /// <param name="elmahName"></param>
+        /// <param name="errorID"></param>
+        public void SetLoadFailInfo(string elmahName, string errorID)
         {
             Message = "讀取失敗";
             Detail = $"{elmahName}讀取失敗";
+            ErrorID = errorID;
+
         }
 
         public string GetDetail()

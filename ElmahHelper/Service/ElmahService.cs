@@ -3,6 +3,7 @@ using ElmahHelper.Tools;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace ElmahHelper.Service
 {
@@ -16,11 +17,14 @@ namespace ElmahHelper.Service
         /// </summary>
         /// <param name="elmahFolderPath"></param>
         /// <returns></returns>
-        public IList<Elmah> GetElmahList(string elmahFolderPath, DateTime startTime, DateTime endTime)
+        public IList<Elmah> GetElmahList(string elmahFolderPath, DateTime? startTime, DateTime? endTime, string fileNameContain = "", string messageContain = "", string detailContain = "")
         {
             IList<Elmah> elmahList = new List<Elmah>();
 
             IList<string> filePathList = fileTool.GetAllFileInFolder(elmahFolderPath);
+
+            startTime = startTime == null ? new DateTime(1900, 1, 1) : startTime;
+            endTime = endTime == null ? new DateTime(2099, 12, 31) : endTime;
 
             DateTime elmahTime;
 
@@ -41,7 +45,14 @@ namespace ElmahHelper.Service
                     }
                 }
 
-            return elmahList;
+            elmahList = elmahList
+                            .Where(
+                                elmah => elmah.FileName.Contains(fileNameContain)
+                                && elmah.ElmahError.Message.Contains(messageContain)
+                                && elmah.ElmahError.GetDetail().Contains(detailContain))
+                            .ToList();
+
+            return elmahList.OrderByDescending(elmah => elmah.ElmahError.Time).ToList();
         }
     }
 

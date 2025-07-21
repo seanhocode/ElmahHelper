@@ -36,7 +36,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1211, 652);
             this.Name = "MainForm";
             this.Text = "ElmahHelper";
             this.Load += new System.EventHandler(this.MainForm_Load);

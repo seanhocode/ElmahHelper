@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -6,6 +7,37 @@ namespace ElmahHelper.Tools
 {
     public class FormControlTool
     {
+        /// <summary>
+        /// New TabPage
+        /// </summary>
+        /// <param name="pageName"></param>
+        /// <param name="pageText"></param>
+        /// <returns></returns>
+        public TabPage NewTabPage(string pageName, string pageText)
+        {
+            TabPage tabPage = new TabPage();
+            tabPage.Dock = DockStyle.Fill;
+            tabPage.AutoScroll = true;
+            tabPage.Name = pageName;
+            tabPage.Text = pageText;
+
+            return tabPage;
+        }
+
+        /// <summary>
+        /// New TabControl
+        /// </summary>
+        /// <param name="tabControlName"></param>
+        /// <returns></returns>
+        public TabControl NewTabControl(string tabControlName)
+        {
+            TabControl configTabControl = new TabControl();
+            configTabControl.Dock = DockStyle.Fill;
+            configTabControl.Name = tabControlName;
+
+            return configTabControl;
+        }
+
         /// <summary>
         /// New Button
         /// </summary>
@@ -59,8 +91,8 @@ namespace ElmahHelper.Tools
             dataGridView.AutoSize = true;
             dataGridView.Dock = DockStyle.Fill;
             dataGridView.AutoGenerateColumns = true;
-            //根據欄位內容調整欄位長度
-            dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            //只根據「目前有顯示在畫面上的列」的內容來調整欄寬
+            dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
 
             return dataGridView;
         }
@@ -147,9 +179,10 @@ namespace ElmahHelper.Tools
         /// <param name="actionColName"></param>
         /// <param name="btnText"></param>
         /// <param name="callback"></param>
-        public void GenDataGridViewActionColumn<T>(DataGridView dataGridView, string dataGridViewButtonColumnName, string actionColName, string btnText, Action<T> callback)
+        public void GenDataGridViewActionColumn<T>(DataGridView dataGridView, string dataGridViewButtonColumnName, string actionColName, string btnText, int index, Action<T> callback)
         {
             DataGridViewButtonColumn btnCol = NewDataGridViewButtonColumn(dataGridViewButtonColumnName, actionColName, btnText);
+            btnCol.DisplayIndex = index;
             dataGridView.Columns.Add(btnCol);
 
             dataGridView.CellClick += (sender, e) =>
@@ -165,6 +198,62 @@ namespace ElmahHelper.Tools
                     if (dgv.Rows[e.RowIndex].DataBoundItem is T item)
                         callback?.Invoke(item);
             };
+        }
+
+        /// <summary>
+        /// NewTableLayoutPanel
+        /// </summary>
+        /// <param name="tableLayoutPanelName"></param>
+        /// <param name="rowCount"></param>
+        /// <param name="columnCount"></param>
+        /// <returns></returns>
+        public TableLayoutPanel NewTableLayoutPanel(string tableLayoutPanelName, int rowCount, int columnCount)
+        {
+            return new TableLayoutPanel
+            {
+                Name = tableLayoutPanelName
+                , Dock = DockStyle.Fill
+                , RowCount = rowCount
+                , ColumnCount = columnCount
+            };
+        }
+
+        /// <summary>
+        /// NewDateTimePicker
+        /// </summary>
+        /// <param name="dateTimePickerName"></param>
+        /// <param name="locationLeft"></param>
+        /// <param name="defaultTime"></param>
+        /// <returns></returns>
+        public DateTimePicker NewDateTimePicker(string dateTimePickerName, int locationX, int locationY, DateTime? defaultTime = null)
+        {
+            defaultTime = defaultTime == null ? DateTime.Now : defaultTime;
+
+            return new DateTimePicker
+            {
+                Name = dateTimePickerName
+                    , Format = DateTimePickerFormat.Custom
+                    , Location = new Point(locationX, locationY)
+                    //, ShowUpDown = true
+                    , Value = defaultTime.Value
+            };
+        }
+
+        /// <summary>
+        /// 開啟確認視窗
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="message"></param>
+        /// <returns>使用者選取結果</returns>
+        public bool OpenYesNoForm(string title, string message)
+        {
+            DialogResult result = MessageBox.Show(
+                    message
+                    , title
+                    , MessageBoxButtons.YesNo
+                    , MessageBoxIcon.Question);
+
+            return result == DialogResult.Yes;
         }
     }
 }

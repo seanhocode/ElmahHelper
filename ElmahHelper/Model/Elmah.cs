@@ -98,7 +98,7 @@ namespace ElmahHelper.Model
                 }
                 catch
                 {
-                    ElmahError.SetEmptyInfo(FileName);
+                    ElmahError.SetLoadFailInfo(FileName, GUID);
                 }
                 
         }
@@ -116,6 +116,11 @@ namespace ElmahHelper.Model
             ElmahError.SetInfo(xmlTool.GetXDocument(filePath));
         }
 
+        /// <summary>
+        /// 取得Elmah時間、GUID by 檔名
+        /// </summary>
+        /// <param name="elmahName"></param>
+        /// <returns></returns>
         public static (DateTime ElmahTime, string GUID)? GetElmahFileNameData(string elmahName)
         {
             // Regex說明：
