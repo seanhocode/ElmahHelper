@@ -225,7 +225,7 @@ namespace ElmahHelper.Tools
         /// <param name="locationLeft"></param>
         /// <param name="defaultTime"></param>
         /// <returns></returns>
-        public DateTimePicker NewDateTimePicker(string dateTimePickerName, int locationX, int locationY, DateTime? defaultTime = null)
+        public DateTimePicker NewDateTimePicker(string dateTimePickerName, DateTime? defaultTime = null)
         {
             defaultTime = defaultTime == null ? DateTime.Now : defaultTime;
 
@@ -233,7 +233,6 @@ namespace ElmahHelper.Tools
             {
                 Name = dateTimePickerName
                     , Format = DateTimePickerFormat.Custom
-                    , Location = new Point(locationX, locationY)
                     //, ShowUpDown = true
                     , Value = defaultTime.Value
             };
@@ -254,6 +253,14 @@ namespace ElmahHelper.Tools
                     , MessageBoxIcon.Question);
 
             return result == DialogResult.Yes;
+        }
+
+        public TextBox NewTextBox(string textBoxName, int width){
+            return new TextBox
+            {
+                Name = textBoxName
+                , Width = width
+            };
         }
     }
 }
