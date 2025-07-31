@@ -136,6 +136,19 @@ namespace ElmahHelper.Model
             return null;
         }
 
+        public static DateTime? GetZipDateTime(string zipFileName){
+
+            if (string.IsNullOrWhiteSpace(zipFileName) || zipFileName.Length < 8)
+                return null;
+
+            string dateStr = zipFileName.Substring(0, 8); // ex. 20250701
+
+            if (DateTime.TryParseExact(dateStr, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+                return dt;
+
+            return null;
+        }
+
         /// <summary>
         /// 從檔案名稱中取得錯誤時間戳記與GUID
         /// </summary>

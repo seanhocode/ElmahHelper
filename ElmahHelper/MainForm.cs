@@ -286,6 +286,7 @@ namespace ElmahHelper
 
             dataGridView.DataSource = new BindingList<Error>();
 
+            //資料Binding完後生成Grid按鈕
             dataGridView.DataBindingComplete += GenGridAction;
 
             return dataGridView;
@@ -305,7 +306,7 @@ namespace ElmahHelper
                 controlTool.GenDataGridViewActionColumn<Error>(dataGridView
                 , "OpenErrorDetailCol"
                 , "操作", "細節"
-                , dataGridView.Columns.Count
+                , 0
                 , (error) =>
                 {
                     OpenErrorDetail(error);
@@ -317,7 +318,7 @@ namespace ElmahHelper
                 controlTool.GenDataGridViewActionColumn<Error>(dataGridView
                 , "OpenElmahFolderCol"
                 , "操作", "檔案總管顯示"
-                , dataGridView.Columns.Count
+                , 0
                 , (error) =>
                 {
                     OpenElmahFolder(error);

@@ -31,13 +31,13 @@ namespace ElmahHelper.Model
             var errorElement = info.Descendants("error").FirstOrDefault();
             if (errorElement == null) return;
 
-            ErrorID = errorElement.Attribute("errorId")?.Value;
-            Application = errorElement.Attribute("application")?.Value;
-            Host = errorElement.Attribute("host")?.Value;
-            Type = errorElement.Attribute("type")?.Value;
-            Message = errorElement.Attribute("message")?.Value;
-            Source = errorElement.Attribute("source")?.Value;
-            Detail = errorElement.Attribute("detail")?.Value;
+            ErrorID = errorElement.Attribute("errorId")?.Value ?? string.Empty;
+            Application = errorElement.Attribute("application")?.Value ?? string.Empty;
+            Host = errorElement.Attribute("host")?.Value ?? string.Empty;
+            Type = errorElement.Attribute("type")?.Value ?? string.Empty;
+            Message = errorElement.Attribute("message")?.Value ?? string.Empty;
+            Source = errorElement.Attribute("source")?.Value ?? string.Empty;
+            Detail = errorElement.Attribute("detail")?.Value ?? string.Empty;
             string timeAttr = errorElement.Attribute("time")?.Value;
             if (DateTime.TryParse(timeAttr, out DateTime time))
             {

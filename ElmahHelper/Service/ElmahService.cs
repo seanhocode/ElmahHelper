@@ -1,10 +1,14 @@
 ﻿using ElmahHelper.Model;
 using ElmahHelper.Tools;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace ElmahHelper.Service
 {
@@ -22,6 +26,7 @@ namespace ElmahHelper.Service
         public IList<Elmah> GetElmahList(string elmahFolderPath, DateTime? startTime, DateTime? endTime, string fileNameContain = "", string messageContain = "", string detailContain = "")
         {
             IList<Elmah> elmahList = new List<Elmah>();
+            ConcurrentBag<Elmah> elmahBag = new ConcurrentBag<Elmah>();
 
             IList<string> filePathList = fileTool.GetAllFileInFolder(elmahFolderPath);
 
@@ -30,31 +35,57 @@ namespace ElmahHelper.Service
 
             DateTime elmahTime;
 
-            if(filePathList != null)
-                foreach (string filePath in filePathList)
+            if (filePathList != null)
+                //平行處理
+                Parallel.ForEach(filePathList, filePath =>
                 {
-                    if(filePath.EndsWith(".zip")){
-                        foreach (string fileName in zipTool.GetFileNameInZip(filePath)){
-                            elmahTime = Elmah.GetElmahFileNameData(fileName).Value.ElmahTime;
+                    try
+                    {
+                        //.zip檔
+                        if (filePath.EndsWith(".zip"))
+                        {
+                            //先取得zip日期
+                            elmahTime = Elmah.GetZipDateTime(Path.GetFileName(filePath)) ?? new DateTime(1900, 1, 1);
+
+                            //zip日期符合時間條件才取得zip裡面的檔案名稱
+                            if ((elmahTime >= startTime.Value.Date) && (elmahTime <= endTime.Value.Date))
+                            {
+                                foreach (string fileName in zipTool.GetFileNameInZip(filePath))
+                                {
+                                    if (fileName.EndsWith(".xml"))
+                                    {
+                                        //再取得elmah日期時間
+                                        elmahTime = Elmah.GetElmahFileNameData(fileName).Value.ElmahTime;
+                                        if ((elmahTime >= startTime) && (elmahTime <= endTime))
+                                            elmahBag.Add(new Elmah(fileName, filePath));
+                                    }
+                                }
+                            }
+                        }
+                        //一般Elmah
+                        else if (filePath.EndsWith(".xml"))
+                        {
+                            elmahTime = Elmah.GetElmahFileNameData(Path.GetFileName(filePath)).Value.ElmahTime;
                             if ((elmahTime >= startTime) && (elmahTime <= endTime))
-                                elmahList.Add(new Elmah(fileName, filePath));
+                                elmahBag.Add(new Elmah(filePath));
                         }
                     }
-                    else{
-                        elmahTime = Elmah.GetElmahFileNameData(Path.GetFileName(filePath)).Value.ElmahTime;
-                        if ((elmahTime >= startTime) && (elmahTime <= endTime))
-                            elmahList.Add(new Elmah(filePath));
+                    catch(Exception ex){
+                        Debug.WriteLine(ex.ToString());
                     }
-                }
+                });
 
-            elmahList = elmahList
-                            .Where(
-                                elmah => elmah.FileName.Contains(fileNameContain)
-                                && elmah.ElmahError.Message.Contains(messageContain)
-                                && elmah.ElmahError.GetDetail().Contains(detailContain))
-                            .ToList();
+            //IndexOf比Contains更快
+            elmahList = elmahBag
+                        .Where(elmah =>
+                            elmah.FileName.IndexOf(fileNameContain, StringComparison.OrdinalIgnoreCase) >= 0                //FileName查詢條件
+                            && elmah.ElmahError.Message.IndexOf(messageContain, StringComparison.OrdinalIgnoreCase) >= 0)   //Message查詢條件
+                        .Where(elmah =>
+                            elmah.ElmahError.GetDetail().IndexOf(detailContain, StringComparison.OrdinalIgnoreCase) >= 0)   //Detail查詢條件
+                        .OrderByDescending(elmah => elmah.ElmahError.Time)
+                        .ToList();
 
-            return elmahList.OrderByDescending(elmah => elmah.ElmahError.Time).ToList();
+            return elmahList;
         }
 
         /// <summary>
