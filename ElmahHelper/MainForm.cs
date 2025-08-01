@@ -18,7 +18,6 @@ namespace ElmahHelper
         private ElmahService elmahSrv = new ElmahService();
         private FormControlTool controlTool = new FormControlTool();
 
-        private string _elmahsourceFolderPath;
         private ElmahQueryCondition _elmahQueryCondition;
         private IList<Elmah> _elmahList;
         private DataGridView _errorDataGridView;
@@ -39,22 +38,20 @@ namespace ElmahHelper
         #region Data
         private void InitialData()
         {
-            // Step.1 _elmahsourceFolderPath
-            _elmahsourceFolderPath = ConfigurationManager.AppSettings["DefaultElmahFolderPath"];
-
-            // Step.2 _elmahQueryCondition
+            // Step.1 _elmahQueryCondition
             GenElmahQueryCondition();
 
-            // Step.3 _errorDataGridView
+            // Step.2 _errorDataGridView
             _errorDataGridView = GenErrorDataGridView();
 
-            // Step.4 _detailForm
+            // Step.3 _detailForm
             _detailForm = GenErrorDetailForm();
 
-            // Step.5 _elmahList
+            // Step.4 _elmahList
             QueryError();
         }
         #endregion
+
         #region Elmah
         #region 生成畫面
         /// <summary>
@@ -69,6 +66,17 @@ namespace ElmahHelper
                 controlTool.NewDateTimePicker("QueryCondition_StartTime", DateTime.Today);
             _elmahQueryCondition.StartTimePicker.CustomFormat = dateTimeFormat;
 
+            int.TryParse(ConfigurationManager.AppSettings["DefaultElmahQueryDays"], out int defaultElmahQueryDays);
+
+            if(defaultElmahQueryDays >= 0){
+                _elmahQueryCondition.StartTimePicker.ValueChanged += (sender, e) =>
+                {
+                    //EndDateTime = StartDateTime + XXX Days
+                    DateTimePicker senderPicker = (DateTimePicker)sender;
+                    _elmahQueryCondition.EndTime = senderPicker.Value.AddDays(defaultElmahQueryDays);
+                };
+            }
+
             _elmahQueryCondition.EndTimePicker =
                 controlTool.NewDateTimePicker("QueryCondition_EndTime", DateTime.Today.AddDays(1));
             _elmahQueryCondition.EndTimePicker.CustomFormat = dateTimeFormat;
@@ -76,6 +84,13 @@ namespace ElmahHelper
             _elmahQueryCondition.FileNameTextBox = controlTool.NewTextBox("QueryCondition_FileName", 120);
             _elmahQueryCondition.MessageTextBox = controlTool.NewTextBox("QueryCondition_Message", 120);
             _elmahQueryCondition.DetailTextBox = controlTool.NewTextBox("QueryCondition_Detail", 120);
+
+            _elmahQueryCondition.ElmahSourceFolderPathLabel = new Label
+            {
+                Name = "QueryCondition_ElmahSourceFolderPath"
+                , AutoSize = true
+            };
+            _elmahQueryCondition.ElmahSourceFolderPath = ConfigurationManager.AppSettings["DefaultElmahFolderPath"];
         }
 
         /// <summary>
@@ -132,31 +147,55 @@ namespace ElmahHelper
         {
             TableLayoutPanel queryElmahTabPageLayout = controlTool.NewTableLayoutPanel("QueryElmahTabPageLayout", 4, 1);
 
-            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     //Row 0: 查詢區(Time)
-            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     //Row 1: 查詢區(Contain)
-            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     //Row 2: 動作區
-            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); //Row 3: Grid區
+            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     //Row 0: 資訊區
+            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     //Row 1: 查詢區(Time)
+            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     //Row 2: 查詢區(Contain)
+            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     //Row 3: 動作區
+            queryElmahTabPageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); //Row 4: Grid區
 
-            queryElmahTabPageLayout.Controls.Add(GenTimeQueryPanel()    , 1, 0);        //查詢區(Time)
-            queryElmahTabPageLayout.Controls.Add(GenContainQueryPanel() , 1, 1);        //查詢區(Contain)
-            queryElmahTabPageLayout.Controls.Add(GenActionPanel()       , 1, 2);        //動作區
-            queryElmahTabPageLayout.Controls.Add(_errorDataGridView     , 1, 3);        //Grid區
+            queryElmahTabPageLayout.Controls.Add(GenElmahInfoPanel()        , 1, 0);    //資訊區
+            queryElmahTabPageLayout.Controls.Add(GenElmahTimeQueryPanel()   , 1, 1);    //查詢區(Time)
+            queryElmahTabPageLayout.Controls.Add(GenElmahContainQueryPanel(), 1, 2);    //查詢區(Contain)
+            queryElmahTabPageLayout.Controls.Add(GenElmahActionPanel()      , 1, 3);    //動作區
+            queryElmahTabPageLayout.Controls.Add(_errorDataGridView         , 1, 4);    //Grid區
 
             return queryElmahTabPageLayout;
         }
 
         /// <summary>
+        /// 生成Elmah資訊區域
+        /// </summary>
+        /// <remarks>需先Load _elmahQueryCondition</remarks>
+        /// <returns></returns>
+        private Panel GenElmahInfoPanel()
+        {
+            int currLeft = 0;
+            Panel infoPanel = new Panel
+            {
+                Name = "ElmahInfoPanel"
+                , Dock = DockStyle.Fill
+                , Height = 40 // 或其他適合高度
+            };
+
+            _elmahQueryCondition.ElmahSourceFolderPathLabel.Location = new Point(currLeft, 15);
+
+            infoPanel.Controls.Add(_elmahQueryCondition.ElmahSourceFolderPathLabel);
+
+            return infoPanel;
+        }
+
+        /// <summary>
         /// 生成查詢區域(Time)
         /// </summary>
-        /// <remarks>查詢區間:[StartDateTime] ~ [EndDateTime]</remarks>
+        /// <remarks>查詢區間:[StartDateTime] ~ [EndDateTime]，需先Load _elmahQueryCondition</remarks>
         /// <returns></returns>
-        private Panel GenTimeQueryPanel()
+        private Panel GenElmahTimeQueryPanel()
         {
             int currLeft = 0;
             
             Panel queryPanel = new Panel
             {
-                Name = "TimeQueryPanel"
+                Name = "ElmahTimeQueryPanel"
                 , Dock = DockStyle.Fill
                 , Height = 40 // 或其他適合高度
             };
@@ -193,21 +232,21 @@ namespace ElmahHelper
         /// <summary>
         /// 生成查詢區域(Contain)
         /// </summary>
-        /// <remarks>檔名:[FileNameTextBox] Message:[MessageTextBox] Detail:[DetailTextBox]</remarks>
+        /// <remarks>檔名:[FileNameTextBox] Message:[MessageTextBox] Detail:[DetailTextBox]，需先Load _elmahQueryCondition</remarks>
         /// <returns></returns>
-        private Panel GenContainQueryPanel()
+        private Panel GenElmahContainQueryPanel()
         {
             int currLeft = 0;
             Panel queryPanel = new Panel
             {
-                Name = "ContainQueryPanel"
+                Name = "ElmahContainQueryPanel"
                 , Dock = DockStyle.Fill
                 , Height = 40 // 或其他適合高度
             };
 
-            GenContainQueryItem(queryPanel, ref currLeft, "檔名:" , 35, _elmahQueryCondition.FileNameTextBox);
-            GenContainQueryItem(queryPanel, ref currLeft, "Message:" , 50, _elmahQueryCondition.MessageTextBox);
-            GenContainQueryItem(queryPanel, ref currLeft, "Detail:" , 45, _elmahQueryCondition.DetailTextBox);
+            GenElmahContainQueryItem(queryPanel, ref currLeft, "檔名:" , 35, _elmahQueryCondition.FileNameTextBox);
+            GenElmahContainQueryItem(queryPanel, ref currLeft, "Message:" , 50, _elmahQueryCondition.MessageTextBox);
+            GenElmahContainQueryItem(queryPanel, ref currLeft, "Detail:" , 45, _elmahQueryCondition.DetailTextBox);
 
             return queryPanel;
         }
@@ -221,7 +260,7 @@ namespace ElmahHelper
         /// <param name="labelWidth"></param>
         /// <param name="textBox"></param>
         /// <remarks>[Label][TextBox]</remarks>
-        private void GenContainQueryItem(Panel queryPanel, ref int currLeft, string labelText, int labelWidth, TextBox textBox)
+        private void GenElmahContainQueryItem(Panel queryPanel, ref int currLeft, string labelText, int labelWidth, TextBox textBox)
         {
             Label lable = new Label
             {
@@ -242,14 +281,15 @@ namespace ElmahHelper
         /// </summary>
         /// <remarks>[查詢Btn] [刪除Btn]</remarks>
         /// <returns></returns>
-        private Panel GenActionPanel()
+        private Panel GenElmahActionPanel()
         {
             int currLeft = 0;
 
             Panel actionPanel = new Panel
             {
-                Dock = DockStyle.Fill,
-                Height = 40 // 或其他適合高度
+                Name = "ElmahActionPanel"
+                , Dock = DockStyle.Fill
+                , Height = 40
             };
 
             Button queryBtn = new Button
@@ -394,7 +434,8 @@ namespace ElmahHelper
         /// <param name="e"></param>
         private void LoadElmahFolder(object sender, EventArgs e)
         {
-            _elmahsourceFolderPath = controlTool.GetSelectFolderPath(_elmahsourceFolderPath);
+            _elmahQueryCondition.ElmahSourceFolderPath = 
+                controlTool.GetSelectFolderPath(_elmahQueryCondition.ElmahSourceFolderPath);
 
             QueryError();
         }
@@ -409,7 +450,7 @@ namespace ElmahHelper
             Configuration config =
                 ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-            config.AppSettings.Settings["DefaultElmahFolderPath"].Value = _elmahsourceFolderPath;
+            config.AppSettings.Settings["DefaultElmahFolderPath"].Value = _elmahQueryCondition.ElmahSourceFolderPath;
 
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
@@ -424,7 +465,7 @@ namespace ElmahHelper
         private void QueryError()
         {
             //LoadElmahList
-            _elmahList = elmahSrv.GetElmahList(_elmahsourceFolderPath
+            _elmahList = elmahSrv.GetElmahList(_elmahQueryCondition.ElmahSourceFolderPath
                                              , _elmahQueryCondition.StartTime
                                              , _elmahQueryCondition.EndTime
                                              , _elmahQueryCondition.FileName

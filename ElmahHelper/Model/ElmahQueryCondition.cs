@@ -5,11 +5,13 @@ namespace ElmahHelper.Model
 {
     public class ElmahQueryCondition
     {
+        private const string ElmahFolderPrefix = "Elmah資料夾:";
         public DateTimePicker StartTimePicker { get; set; }
         public DateTimePicker EndTimePicker { get; set; }
         public TextBox FileNameTextBox { get; set; }
         public TextBox MessageTextBox { get; set; }
         public TextBox DetailTextBox { get; set; }
+        public Label ElmahSourceFolderPathLabel { get; set; }
         public DateTime StartTime
         {
             get => StartTimePicker.Value;
@@ -34,6 +36,11 @@ namespace ElmahHelper.Model
         {
             get => DetailTextBox.Text;
             set => DetailTextBox.Text = value;
+        }
+        public string ElmahSourceFolderPath
+        {
+            get => ElmahSourceFolderPathLabel.Text.Replace(ElmahFolderPrefix, string.Empty);
+            set => ElmahSourceFolderPathLabel.Text = $"{ElmahFolderPrefix}{value}";
         }
     }
 }

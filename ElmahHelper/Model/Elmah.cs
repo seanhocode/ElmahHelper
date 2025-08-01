@@ -136,6 +136,11 @@ namespace ElmahHelper.Model
             return null;
         }
 
+        /// <summary>
+        /// 取得ZipDateTime
+        /// </summary>
+        /// <param name="zipFileName"></param>
+        /// <returns></returns>
         public static DateTime? GetZipDateTime(string zipFileName){
 
             if (string.IsNullOrWhiteSpace(zipFileName) || zipFileName.Length < 8)
