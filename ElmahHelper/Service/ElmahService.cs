@@ -32,22 +32,22 @@ namespace ElmahHelper.Service
             startTime = startTime == null ? new DateTime(1900, 1, 1) : startTime;
             endTime = endTime == null ? new DateTime(2099, 12, 31) : endTime;
 
-            DateTime elmahTime;
-
             if (filePathList != null)
                 //平行處理
                 Parallel.ForEach(filePathList, filePath =>
                 {
+                    //避免Thread之間存取同一個變數
+                    DateTime elmahTime, elmahZipTime;
                     try
                     {
                         //.zip檔
                         if (filePath.EndsWith(".zip"))
                         {
                             //先取得zip日期
-                            elmahTime = Elmah.GetZipDateTime(Path.GetFileName(filePath)) ?? new DateTime(1900, 1, 1);
+                            elmahZipTime = Elmah.GetZipDateTime(Path.GetFileName(filePath)) ?? new DateTime(1900, 1, 1);
 
                             //zip日期符合時間條件才取得zip裡面的檔案名稱
-                            if ((elmahTime >= startTime.Value.Date) && (elmahTime <= endTime.Value.Date))
+                            if ((elmahZipTime >= startTime.Value.Date) && (elmahZipTime <= endTime.Value.Date))
                             {
                                 foreach (string fileName in zipTool.GetFileNameInZip(filePath))
                                 {
