@@ -27,7 +27,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Release\ElmahHelper.1.2.2\</OutputPath>
+    <OutputPath>..\Release\ElmahHelper.1.3\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -56,6 +56,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\Elmah.cs" />
+    <Compile Include="Model\ElmahPage.cs" />
     <Compile Include="Model\ElmahQueryCondition.cs" />
     <Compile Include="Model\Error.cs" />
     <Compile Include="Program.cs" />

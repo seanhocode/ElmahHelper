@@ -3,7 +3,9 @@ using ElmahHelper.Tools;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,8 +48,8 @@ namespace ElmahHelper.Service
                             //先取得zip日期
                             elmahZipTime = Elmah.GetZipDateTime(Path.GetFileName(filePath)) ?? new DateTime(1900, 1, 1);
 
-                            //zip日期符合時間條件才取得zip裡面的檔案名稱
-                            if ((elmahZipTime >= startTime.Value.Date) && (elmahZipTime <= endTime.Value.Date))
+                            //zip日期符合時間條件才取得zip裡面的檔案名稱(zip檔時間條件放寬前後一日，因今日的壓縮檔可能隔日才壓縮，壓縮檔名時間會被+1)
+                            if ((elmahZipTime >= startTime.Value.Date.AddDays(-1)) && (elmahZipTime <= endTime.Value.Date.AddDays(1)))
                             {
                                 foreach (string fileName in zipTool.GetFileNameInZip(filePath))
                                 {
@@ -135,5 +137,4 @@ namespace ElmahHelper.Service
             }
         }
     }
-
 }
